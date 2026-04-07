@@ -9,12 +9,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend code
 COPY backend/ .
 
-# Copy and make entrypoint executable
-COPY backend/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# Copy Python entrypoint
+COPY backend/entrypoint.py /app/entrypoint.py
+RUN chmod +x /app/entrypoint.py
 
 # Expose port
 EXPOSE 8000
 
-# Use entrypoint script
-ENTRYPOINT ["/app/entrypoint.sh"]
+# Use Python entrypoint
+CMD ["python3", "/app/entrypoint.py"]
