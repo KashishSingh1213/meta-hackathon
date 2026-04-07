@@ -1,0 +1,14 @@
+node_modules
+dist
+build
+.git
+.github
+.env
+.env.local
+*.log
+__pycache__
+*.pyc
+venv
+env
+.DS_Store
+frontend/node_modules
