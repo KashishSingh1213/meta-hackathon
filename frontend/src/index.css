@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-gradient-to-br from-dark via-darker to-black text-white min-h-screen;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply relative bg-white/5 backdrop-blur-lg border border-white/10 rounded-lg;
+  }
+
+  .glass-dark {
+    @apply relative bg-black/20 backdrop-blur-xl border border-white/5 rounded-lg;
+  }
+
+  .btn-primary {
+    @apply inline-flex px-6 py-3 bg-medical hover:bg-blue-700 text-white rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 font-semibold shadow-lg cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all duration-200 border border-white/20 font-medium cursor-pointer;
+  }
+
+  .card-medical {
+    @apply glass p-6 rounded-xl space-y-4 shadow-lg;
+  }
+  
+  .badge {
+    @apply inline-block px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm font-semibold border border-blue-500/30;
+  }
+}
+
+@layer utilities {
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  }
+
+  @keyframes slide-in {
+    from { 
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    to { 
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-float {
+    @apply animation-float;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+  }
+}
