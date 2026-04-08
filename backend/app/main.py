@@ -6,8 +6,10 @@ from dotenv import load_dotenv
 # Load environment variables from .env file FIRST
 load_dotenv()
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from app.routes import router
 
 # Create FastAPI app
@@ -24,6 +26,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Custom exception handler for validation errors
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle Pydantic validation errors with detailed logging."""
+    print(f"❌ Validation error on {request.method} {request.url.path}")
+    print(f"📊 Request body: {await request.body()}")
+    errors = exc.errors()
+    print(f"🔴 Validation errors: {errors}")
+    
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": errors,
+            "message": "Request validation failed",
+            "path": str(request.url.path),
+        },
+    )
 
 # Include routes
 app.include_router(router)

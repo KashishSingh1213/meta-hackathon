@@ -82,18 +82,54 @@ async def get_state() -> Dict[str, Any]:
 @router.post("/step")
 async def step_environment(request: ActionRequest) -> StepResult:
     """Take a step in the environment."""
+    print("\n" + "="*60)
+    print("📝 STEP ENDPOINT CALLED")
+    print("="*60)
+    
     try:
-        print(f"📝 Step request received: action_type={request.action.action_type}, details={request.action.details}")
+        # Log the incoming request
+        print(f"📥 Request type: {type(request)}")
+        print(f"📥 Request action: {request.action}")
+        print(f"📥 Action type: {request.action.action_type}")
+        print(f"📥 Action details: {request.action.details}")
+        print(f"📥 Action reasoning: {request.action.reasoning}")
+        
+        # Check environment state
+        if env is None:
+            raise RuntimeError("Environment not initialized")
+        
+        print(f"✅ Environment exists: {env}")
+        print(f"✅ Current observation exists: {env.current_observation is not None}")
+        print(f"✅ Episode done: {env.episode_done}")
+        print(f"✅ Step count: {env.step_count}")
+        
+        # Call step
+        print(f"🔄 Calling env.step()...")
         result = env.step(request.action)
-        print(f"✅ Step completed successfully: reward={result.reward}, done={result.done}")
+        
+        print(f"✅ Step completed successfully!")
+        print(f"✅ Reward: {result.reward}")
+        print(f"✅ Done: {result.done}")
+        print(f"✅ Step count after: {env.step_count}")
+        print("="*60 + "\n")
+        
         return result
+        
     except RuntimeError as e:
         print(f"⚠️  Runtime error in step: {e}")
+        print("="*60 + "\n")
         raise HTTPException(status_code=400, detail=str(e))
+        
+    except ValueError as e:
+        print(f"⚠️  Value error in step: {e}")
+        print("="*60 + "\n")
+        raise HTTPException(status_code=400, detail=str(e))
+        
     except Exception as e:
-        print(f"❌ Error in step: {type(e).__name__}: {e}")
+        print(f"❌ Unexpected error in step: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
+        print("="*60 + "\n")
         raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}")
 
 

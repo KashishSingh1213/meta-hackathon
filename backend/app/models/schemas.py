@@ -42,7 +42,11 @@ class Action(BaseModel):
     """Action taken by user/agent."""
     action_type: str = Field(..., description="Type: request_history, order_labs, diagnose, recommend_treatment")
     details: Dict[str, Any] = Field(default_factory=dict)
-    reasoning: Optional[str] = None
+    reasoning: Optional[str] = Field(default=None)
+    
+    class Config:
+        # Allow extra fields to be ignored (more lenient)
+        extra = "ignore"
 
 
 class RewardBreakdown(BaseModel):
