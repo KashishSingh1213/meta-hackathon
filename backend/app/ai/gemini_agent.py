@@ -19,19 +19,25 @@ class GeminiAgent:
         self.model = None
         self.fallback_mode = False
         
+        print(f"🔍 API Key Check: {api_key[:10] if api_key else 'NONE'}...")
+        print(f"🔍 API Key length: {len(api_key) if api_key else 0}")
+        
         if not api_key:
             print("⚠️  GEMINI_API_KEY not set - using fallback mode")
             self.fallback_mode = True
             return
         
         try:
+            print(f"🤖 Configuring genai with API key...")
             genai.configure(api_key=api_key)
             # Use gemini-1.5-flash (reliable and fast)
             print(f"🤖 Initializing Gemini model...")
             self.model = genai.GenerativeModel("gemini-1.5-flash")
             print(f"✅ Successfully initialized: gemini-1.5-flash")
+            print(f"✅ Model object: {self.model}")
         except Exception as e:
-            print(f"⚠️  Gemini API configuration failed: {e} - using fallback mode")
+            print(f"⚠️  Gemini API configuration failed: {type(e).__name__}: {e}")
+            print(f"⚠️  Using fallback mode")
             self.fallback_mode = True
     
     def decide_action(self, observation: Observation, context: Optional[str] = None) -> AgentDecisionResponse:
@@ -39,13 +45,16 @@ class GeminiAgent:
         
         # If in fallback mode, return intelligent default based on patient state
         if self.fallback_mode:
+            print("⚠️  IN FALLBACK MODE - API key or model not initialized")
             return self._get_intelligent_fallback(observation)
         
         # Build context for the model
         prompt = self._build_prompt(observation, context)
         
         try:
+            print(f"🔄 Calling Gemini API with model: {self.model}")
             response = self.model.generate_content(prompt)
+            print(f"✅ Got response from Gemini")
             
             # Parse response
             response_text = response.text
@@ -59,6 +68,7 @@ class GeminiAgent:
                 reasoning=action_data.get("reasoning", ""),
             )
             
+            print(f"✅ Successfully returned real AI decision: {action.action_type}")
             return AgentDecisionResponse(
                 action=action,
                 reasoning=action_data.get("reasoning", response_text),
@@ -66,7 +76,9 @@ class GeminiAgent:
             )
         except Exception as e:
             # Fallback to safe action
-            print(f"❌ Gemini error: {e} - switching to fallback")
+            print(f"❌ GEMINI API CALL FAILED: {type(e).__name__}: {e}")
+            print(f"❌ Switching to fallback mode")
+            print(f"❌ Check: API key valid? Model initialized? {self.model}")
             return self._get_intelligent_fallback(observation)
     
     def _build_prompt(self, observation: Observation, context: Optional[str]) -> str:

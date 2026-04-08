@@ -23,11 +23,20 @@ env = ClinIQEnvironment()
 
 # Gemini agent - always initialize, uses smart fallback if API unavailable
 try:
+    print("\n" + "="*60)
+    print("🚀 INITIALIZING GEMINI AGENT AT STARTUP")
+    print("="*60)
     agent = GeminiAgent()
-    print("✅ Gemini Agent initialized")
+    print(f"✅ Gemini Agent initialized")
+    print(f"   - Fallback mode: {agent.fallback_mode}")
+    print(f"   - Model: {agent.model}")
+    print(f"   - API Key loaded: {bool(agent.api_key)}")
+    print("="*60 + "\n")
 except Exception as e:
     agent = None
     print(f"❌ CRITICAL: Gemini agent failed to initialize: {e}")
+    import traceback
+    traceback.print_exc()
 
 
 @router.get("/health")
