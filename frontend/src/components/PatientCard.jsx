@@ -57,7 +57,7 @@ function PatientCard({ observation, stepCount }) {
         <div className="glass-dark p-3 rounded-lg text-center">
           <p className="text-xs text-gray-400">Temp</p>
           <p className={`text-lg font-bold ${getVitalColor('temperature', vitals.temperature)}`}>
-            {vitals.temperature}
+            {vitals.temperature.toFixed(1)}
           </p>
           <p className="text-xs text-gray-400">°C</p>
         </div>
@@ -69,7 +69,7 @@ function PatientCard({ observation, stepCount }) {
         <div className="glass-dark p-3 rounded-lg text-center">
           <p className="text-xs text-gray-400">O₂</p>
           <p className={`text-lg font-bold ${getVitalColor('oxygen_saturation', vitals.oxygen_saturation)}`}>
-            {vitals.oxygen_saturation}
+            {vitals.oxygen_saturation.toFixed(1)}
           </p>
           <p className="text-xs text-gray-400">%</p>
         </div>
