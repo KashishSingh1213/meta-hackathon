@@ -26,7 +26,8 @@ try:
     agent = GeminiAgent()
 except Exception as e:
     agent = None
-    print(f"Warning: Gemini agent not initialized: {e}")
+    print(f"❌ ERROR: Gemini agent not initialized: {e}")
+    print("⚠️  Make sure GEMINI_API_KEY is set in Railway environment variables")
 
 
 @router.get("/health")

@@ -19,7 +19,8 @@ class GeminiAgent:
             raise ValueError("GEMINI_API_KEY not set in environment")
         
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        # Use gemini-pro for better availability
+        self.model = genai.GenerativeModel("gemini-pro")
     
     def decide_action(self, observation: Observation, context: Optional[str] = None) -> AgentDecisionResponse:
         """Get AI agent decision for next action."""
