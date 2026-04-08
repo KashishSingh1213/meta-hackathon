@@ -26,29 +26,10 @@ class GeminiAgent:
         
         try:
             genai.configure(api_key=api_key)
-            # Try multiple model options in order of preference
-            model_options = [
-                "gemini-1.5-pro",
-                "gemini-1.5-flash", 
-                "gemini-pro",
-                "gemini-pro-vision",
-            ]
-            
-            for model_name in model_options:
-                try:
-                    print(f"🤖 Trying model: {model_name}")
-                    self.model = genai.GenerativeModel(model_name)
-                    # Quick test
-                    self.model.generate_content("test")
-                    print(f"✅ Successfully initialized: {model_name}")
-                    break
-                except Exception as e:
-                    print(f"❌ {model_name} failed: {e}")
-                    continue
-            
-            if self.model is None:
-                print("⚠️  No Gemini models available - using fallback mode")
-                self.fallback_mode = True
+            # Use gemini-1.5-flash (reliable and fast)
+            print(f"🤖 Initializing Gemini model...")
+            self.model = genai.GenerativeModel("gemini-1.5-flash")
+            print(f"✅ Successfully initialized: gemini-1.5-flash")
         except Exception as e:
             print(f"⚠️  Gemini API configuration failed: {e} - using fallback mode")
             self.fallback_mode = True
