@@ -110,7 +110,8 @@ class ClinIQEnvironment:
     
     def _update_observation(self, action: Action) -> Observation:
         """Update observation based on action."""
-        obs = self.current_observation
+        # Create a copy to avoid mutating the original
+        obs = self.current_observation.copy(deep=True)
         
         if action.action_type == "order_labs":
             # Simulate lab results

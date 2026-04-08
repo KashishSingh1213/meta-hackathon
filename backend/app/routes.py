@@ -83,12 +83,18 @@ async def get_state() -> Dict[str, Any]:
 async def step_environment(request: ActionRequest) -> StepResult:
     """Take a step in the environment."""
     try:
+        print(f"📝 Step request received: action_type={request.action.action_type}, details={request.action.details}")
         result = env.step(request.action)
+        print(f"✅ Step completed successfully: reward={result.reward}, done={result.done}")
         return result
     except RuntimeError as e:
+        print(f"⚠️  Runtime error in step: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ Error in step: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {str(e)}")
 
 
 @router.post("/agent/decide")
