@@ -89,28 +89,33 @@ async def step_environment(request: ActionRequest) -> StepResult:
     try:
         # Log the incoming request
         print(f"📥 Request type: {type(request)}")
-        print(f"📥 Request action: {request.action}")
         print(f"📥 Action type: {request.action.action_type}")
         print(f"📥 Action details: {request.action.details}")
-        print(f"📥 Action reasoning: {request.action.reasoning}")
         
         # Check environment state
         if env is None:
             raise RuntimeError("Environment not initialized")
         
-        print(f"✅ Environment exists: {env}")
-        print(f"✅ Current observation exists: {env.current_observation is not None}")
-        print(f"✅ Episode done: {env.episode_done}")
-        print(f"✅ Step count: {env.step_count}")
+        # AUTO-INITIALIZE: If environment not reset, reset with default task
+        if env.current_observation is None:
+            print("⚠️  Environment not reset. Auto-initializing with default task...")
+            env.reset(task="viral_uri")
+            print("✅ Environment auto-initialized")
+        
+        # AUTO-RESET: If episode is done, reset for new episode
+        if env.episode_done:
+            print("⚠️  Episode already done. Auto-resetting for new episode...")
+            env.reset(task="viral_uri")
+            print("✅ Episode reset for new game")
+        
+        print(f"✅ Environment state: obs={env.current_observation is not None}, done={env.episode_done}, step={env.step_count}")
         
         # Call step
         print(f"🔄 Calling env.step()...")
         result = env.step(request.action)
         
         print(f"✅ Step completed successfully!")
-        print(f"✅ Reward: {result.reward}")
-        print(f"✅ Done: {result.done}")
-        print(f"✅ Step count after: {env.step_count}")
+        print(f"✅ Reward: {result.reward}, Done: {result.done}, New step count: {env.step_count}")
         print("="*60 + "\n")
         
         return result
