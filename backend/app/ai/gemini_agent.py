@@ -15,15 +15,50 @@ class GeminiAgent:
         if api_key is None:
             api_key = os.getenv("GEMINI_API_KEY")
         
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY not set in environment")
+        self.api_key = api_key
+        self.model = None
+        self.fallback_mode = False
         
-        genai.configure(api_key=api_key)
-        # Use gemini-pro for better availability
-        self.model = genai.GenerativeModel("gemini-pro")
+        if not api_key:
+            print("⚠️  GEMINI_API_KEY not set - using fallback mode")
+            self.fallback_mode = True
+            return
+        
+        try:
+            genai.configure(api_key=api_key)
+            # Try multiple model options in order of preference
+            model_options = [
+                "gemini-1.5-pro",
+                "gemini-1.5-flash", 
+                "gemini-pro",
+                "gemini-pro-vision",
+            ]
+            
+            for model_name in model_options:
+                try:
+                    print(f"🤖 Trying model: {model_name}")
+                    self.model = genai.GenerativeModel(model_name)
+                    # Quick test
+                    self.model.generate_content("test")
+                    print(f"✅ Successfully initialized: {model_name}")
+                    break
+                except Exception as e:
+                    print(f"❌ {model_name} failed: {e}")
+                    continue
+            
+            if self.model is None:
+                print("⚠️  No Gemini models available - using fallback mode")
+                self.fallback_mode = True
+        except Exception as e:
+            print(f"⚠️  Gemini API configuration failed: {e} - using fallback mode")
+            self.fallback_mode = True
     
     def decide_action(self, observation: Observation, context: Optional[str] = None) -> AgentDecisionResponse:
         """Get AI agent decision for next action."""
+        
+        # If in fallback mode, return intelligent default based on patient state
+        if self.fallback_mode:
+            return self._get_intelligent_fallback(observation)
         
         # Build context for the model
         prompt = self._build_prompt(observation, context)
@@ -50,7 +85,8 @@ class GeminiAgent:
             )
         except Exception as e:
             # Fallback to safe action
-            return self._get_fallback_action(str(e))
+            print(f"❌ Gemini error: {e} - switching to fallback")
+            return self._get_intelligent_fallback(observation)
     
     def _build_prompt(self, observation: Observation, context: Optional[str]) -> str:
         """Build prompt for Gemini."""
@@ -126,6 +162,38 @@ Prioritize life-threatening conditions. Be thorough but efficient."""
                 "reasoning": response_text,
                 "confidence": 0.5,
             }
+    
+    def _get_intelligent_fallback(self, observation: Observation) -> AgentDecisionResponse:
+        """Get intelligent fallback action based on patient state (no API call)."""
+        # Safe clinical reasoning without API
+        hr = observation.vitals.heart_rate
+        bp = observation.vitals.blood_pressure
+        temp = observation.vitals.temperature
+        o2 = observation.vitals.oxygen_saturation
+        
+        # Check for concerning vital signs
+        is_critical = (hr > 120 or hr < 60 or temp > 39 or o2 < 90)
+        
+        reasoning = ""
+        if is_critical:
+            reasoning = "Vital signs concerning - ordering urgent labs to rule out serious conditions"
+            labs = ["Blood culture", "CBC", "CMP", "Lactate", "Troponin"]
+            action_type = "order_labs"
+            details = {"labs": labs}
+        else:
+            reasoning = "Stable vitals - gathering more clinical information"
+            action_type = "request_history"
+            details = {}
+        
+        return AgentDecisionResponse(
+            action=Action(
+                action_type=action_type,
+                details=details,
+                reasoning=reasoning,
+            ),
+            reasoning=f"[Fallback AI] {reasoning}",
+            confidence=0.6,
+        )
     
     def _get_fallback_action(self, error: str) -> AgentDecisionResponse:
         """Get fallback action on error."""

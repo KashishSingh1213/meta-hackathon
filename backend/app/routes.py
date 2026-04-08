@@ -21,13 +21,13 @@ router = APIRouter(prefix="/api", tags=["clinic"])
 # Global environment instance
 env = ClinIQEnvironment()
 
-# Gemini agent
+# Gemini agent - always initialize, uses smart fallback if API unavailable
 try:
     agent = GeminiAgent()
+    print("✅ Gemini Agent initialized")
 except Exception as e:
     agent = None
-    print(f"❌ ERROR: Gemini agent not initialized: {e}")
-    print("⚠️  Make sure GEMINI_API_KEY is set in Railway environment variables")
+    print(f"❌ CRITICAL: Gemini agent failed to initialize: {e}")
 
 
 @router.get("/health")
@@ -103,13 +103,16 @@ async def get_agent_decision(request: AgentDecisionRequest) -> AgentDecisionResp
     if agent is None:
         raise HTTPException(
             status_code=503,
-            detail="Gemini API not configured. Set GEMINI_API_KEY environment variable.",
+            detail="AI Agent not available. Set GEMINI_API_KEY environment variable.",
         )
     
     try:
         decision = agent.decide_action(request.observation, request.context)
         return decision
     except Exception as e:
+        print(f"❌ Agent decision error: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Agent error: {str(e)}")
 
 
